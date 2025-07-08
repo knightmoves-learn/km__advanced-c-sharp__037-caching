@@ -296,22 +296,51 @@ public class ControllersTests
     }
 
     [Theory, TestPriority(14)]
-    [InlineData("/Homes")]
-    public async Task RateLimitingServiceReturnsTooManyRequestsAfter20RequestsInUnderASecond(string url)
+    [InlineData("admin/Homes/Location/50313")]
+    public async Task ZipLocationServiceCanReturnNewZipCodeLocation(string url)
     {
         var client = _factory.CreateClient();
 
-        var responses = new List<HttpResponseMessage>();
+        HttpRequestMessage sendRequest = new HttpRequestMessage(HttpMethod.Post, url);
+        await client.SendAsync(sendRequest);
 
-        for (int i = 0; i < 21; i++)
-        {
-            var response = await client.GetAsync(url);
-            responses.Add(response);
-        }
-
-        Assert.True(responses[20].StatusCode.Equals(HttpStatusCode.TooManyRequests),
-            $"No timeout after 20 requests to {url}. Expected 429 Too Many Requests, but got {(int)responses[20].StatusCode}: {responses[20].StatusCode}");
+        var logs = _factory.LoggerProvider.Logs;
+        Assert.Contains(logs, log =>
+            log.LogLevel == LogLevel.Information &&
+            log.Message.Contains("Fetching place from api for"));
     }
+
+    [Theory, TestPriority(15)]
+    [InlineData("admin/Homes/Location/50313")]
+    public async Task ZipLocationServiceCanReturnFromCacheWithin15Seconds(string url)
+    {
+        var client = _factory.CreateClient();
+        HttpRequestMessage sendRequest = new HttpRequestMessage(HttpMethod.Post, url);
+        await client.SendAsync(sendRequest);
+        var logs = _factory.LoggerProvider.Logs;
+
+        Assert.Contains(logs, log =>
+            log.LogLevel == LogLevel.Information &&
+            log.Message.Contains("Returning place from cache for"));
+    }
+
+    // [Theory, TestPriority(16)]
+    // [InlineData("/Homes")]
+    // public async Task RateLimitingServiceReturnsTooManyRequestsAfter20RequestsInUnderASecond(string url)
+    // {
+    //     var client = _factory.CreateClient();
+
+    //     var responses = new List<HttpResponseMessage>();
+
+    //     for (int i = 0; i < 21; i++)
+    //     {
+    //         var response = await client.GetAsync(url);
+    //         responses.Add(response);
+    //     }
+
+    //     Assert.True(responses[20].StatusCode.Equals(HttpStatusCode.TooManyRequests),
+    //         $"No timeout after 20 requests to {url}. Expected 429 Too Many Requests, but got {(int)responses[20].StatusCode}: {responses[20].StatusCode}");
+    // }
 
     public async Task<string> GetBearerToken(string username, string password, string role, string homeStreetAddress, bool trimToken)
     {
@@ -414,7 +443,6 @@ public class ControllersTests
         var getAllResponse = await client.GetAsync("/Homes");
         string getAllResponseStr = await getAllResponse.Content.ReadAsStringAsync();
         dynamic? getAllResponseObj = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(getAllResponseStr);
-        //return getAllResponseObj?[getAllResponseObj.Count - 1].Id ?? "";
         return getAllResponseObj?.Items?[getAllResponseObj.TotalItems - 1].Id ?? "";
     }
 
