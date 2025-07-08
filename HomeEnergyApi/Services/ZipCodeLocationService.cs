@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace HomeEnergyApi.Services
 {
@@ -16,7 +17,8 @@ namespace HomeEnergyApi.Services
         {
             var response = await httpClient.GetFromJsonAsync<ZipLocationResponse>($"https://api.zippopotam.us/us/{zipCode}");
 
-            var place = response?.Places[0];
+            Place place = response?.Places[0];
+
             return place;
         }
     }

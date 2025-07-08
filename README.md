@@ -6,32 +6,21 @@
 
 ## Instructions
 
-- In `HomeEnergyApi/Security/ValueEncryptor.cs`
-    - On ValueEncryptor create a new public delegate with void return type named `DecryptionHandler` taking two arguments of type `string` corresponding to the cipher text and plain text
-    - On ValueEncryptor Create a new public event with type `DecryptionHandler?` named `ValueDecrypted`
-    - Modify the `Decrypt()` method so that `Invoke()` is called on `ValueDecrypted` with the `cipherText` and `plaintext` passed as arguments, this should happen right before the `plaintext` is returned
-
-- In `HomeEnergyApi/Services/DecryptionAuditService`
-- Create a new public class `DecryptionAuditService`
-  - Create a private readonly `ILogger<DecryptionAuditService>` property
-  - Create a constructor that accepts an `ILogger<DecryptionAuditService>`
-    - Assign the passed argument to the `ILogger<DecryptionAuditService>` property
-  - Create an `OnValueDecrypted()` method that returns void and takes two arguments of type `string` corresponding to the cipher text and plain text 
-    - Call the `LogInformation()` method on the `ILogger<DecryptionAuditService>` and pass the argument `$"[Audit] Decrypted: {cipherText} to {plaintext}"`
-
-- In `HomeEnergyApi/Services/DecryptionLoggingService`
-- Create a new public class `DecryptionLoggingService`
-  - Create a private readonly `ILogger<DecryptionLoggingService>` property
-  - Create a constructor that accepts an `ILogger<DecryptionLoggingService>`
-    - Assign the passed argument to the `ILogger<DecryptionLoggingService>` property
-  - Create an `OnValueDecrypted()` method that returns void and takes two arguments of type `string` corresponding to the cipher text and plain text 
-    - Call the `LogInformation()` method on the `ILogger<DecryptionAuditService>` and pass the argument `$"[Logging] Decrypted: {cipherText} to {plaintext}`
-
 - In `HomeEnergyApi/Program.cs`
-- Add two singletons for `DecryptionAuditService` and `DecryptionLoggingService` to the `Services` property on the builder
-- Within the scope of `app.Services.CreateScope()`...
-    - Utilize `scope.ServiceProvider.GetRequiredService()` to get the `ValueEncryptor`, `DecryptionAuditService`, and `DecryptionLoggingService`
-    - Assign the delegate services `DecryptionAuditService` and `DecryptionLoggingService` to the `ValueDecrypted` event on the `ValueEncryptor`
+  - Add the line `builder.Services.AddMemoryCache()` right before `builder.Build()` is called
+
+- In `HomeEnergyApi/Services/ZipCodeLocationService.cs`
+  - On `ZipCodeLocationService`
+    - Add a private readonly property of type `IMemoryCache`
+    - Add a private readonly property of type `ILogger<ZipCodeLocationService>`
+    - Add a private const property of type `string` named `CacheKey` with the value `"CachedZipCodeLocation"`
+    - Add the newly created properties of types `IMemoryCache` and `ILogger<ZipLocationService>` to the argument list and assign them in the constructor
+    - Modify the `Report()` method
+      - IF the result of calling `TryGetValue()` with the `string CacheKey` provided as an argument and an out value of type `Place` designated on the `IMemoryCache` returns true
+        - Call `LogInformation` on the `ILogger<ZipLocationService>` and supply the argument `$"Returning place from cache for {zipCode}"`
+        - Return the out value of type `Place`
+      - Otherwise, call `LogInformation` on the `ILogger<ZipLocationService>` and supply the argument `$"Fetching place from api for {zipCode}"`
+      - Before returning the variable `Place place` call `Set()` on the `IMemoryCache` with the arguments `CacheKey`, the `Place place` variable, and `TimeSpan.FromSeconds(15)`
 
 ## Additional Information
 

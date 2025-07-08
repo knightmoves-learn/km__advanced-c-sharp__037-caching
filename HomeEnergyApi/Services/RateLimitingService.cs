@@ -3,7 +3,7 @@ namespace HomeEnergyApi.Services
     public class RateLimitingService
     {
         private readonly Dictionary<string, List<DateTime>> _requests = new();
-        private readonly int _maxRequests = 20;
+        private readonly int _maxRequests = 100;
         private readonly TimeSpan _timeWindow = TimeSpan.FromSeconds(1);
 
         public bool IsRequestAllowed(string clientKey)
