@@ -1,9 +1,8 @@
-# 038 Plinq
+# 037 Caching
 
 ## Lecture
 
-[![# Plinq (Part 1)](https://img.youtube.com/vi/PuPd9aZ55O4/0.jpg)](https://www.youtube.com/watch?v=PuPd9aZ55O4)
-[![# Plinq (Part 2)](https://img.youtube.com/vi/PuPd9aZ55O4/0.jpg)](https://www.youtube.com/watch?v=PuPd9aZ55O4)
+[![# Caching](https://img.youtube.com/vi/PuPd9aZ55O4/0.jpg)](https://www.youtube.com/watch?v=PuPd9aZ55O4)
 
 ## Instructions
 
